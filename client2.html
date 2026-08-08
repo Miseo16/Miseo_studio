@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISEO STUDIO - 클라이언트 작업 현황</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Pretendard', sans-serif; background-color: #FFF9FA; color: #333; line-height: 1.6; }
+    
+    header { background-color: #FFFFFF; padding: 20px 0; text-align: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02); margin-bottom: 30px; }
+    .logo { font-size: 20px; font-weight: 800; color: #FF8E9E; letter-spacing: 1px; }
+    main { max-width: 800px; margin: 0 auto; padding: 0 20px; padding-bottom: 60px; }
+    #loadingScreen, #errorScreen { text-align: center; padding: 100px 20px; font-size: 18px; color: #777; font-weight: bold; }
+    #mainContent { display: none; } 
+
+    .card { background: #FFFFFF; border-radius: 24px; padding: 35px; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(255, 142, 158, 0.06); }
+    .section-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: inline-block; }
+    
+    .header-info { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #f8f8f8; padding-bottom: 20px; margin-bottom: 20px; }
+    .project-name { font-size: 24px; font-weight: 800; color: #333; }
+    .client-name { font-size: 16px; color: #FF8E9E; font-weight: bold; }
+    
+    /* 노선도 UI */
+    .timeline-container { display: flex; align-items: center; overflow-x: auto; padding: 20px 10px; min-height: 120px; }
+    .station-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; }
+    .station { display: flex; justify-content: center; width: 60px; }
+    .station .node { width: 22px; height: 22px; border-radius: 50%; background: #eee; z-index: 2; position: relative; transition: 0.3s; }
+    .station.completed .node { background: #FF8E9E; }
+    .station.active .node { background: #fff; border: 5px solid #FF8E9E; width: 12px; height: 12px; box-shadow: 0 0 0 4px #ffe4e8; }
+    .station .name { position: absolute; top: 35px; font-size: 13px; font-weight: 700; color: #bbb; white-space: nowrap; }
+    .station.completed .name { color: #555; }
+    .station.active .name { color: #FF8E9E; font-size: 14px; }
+    .track { flex-grow: 1; height: 4px; background: #eee; min-width: 40px; transition: 0.3s; }
+    .track.completed { background: #FF8E9E; }
+
+    /* 히스토리 갤러리 UI */
+    .history-container { display: flex; gap: 16px; overflow-x: auto; padding: 10px 0 20px 0; }
+    .history-container::-webkit-scrollbar { height: 8px; }
+    .history-container::-webkit-scrollbar-thumb { background: #FFB6C1; border-radius: 10px; }
+    .history-card { min-width: 240px; flex-shrink: 0; background: #fff; border: 2.5px solid #333; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .history-photo { height: 180px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-bottom: 2.5px solid #333; position: relative; }
+    .history-photo img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: 0.2s; }
+    .history-photo img:hover { filter: brightness(0.9); }
+    .history-desc { padding: 16px; text-align: center; font-size: 15px; font-weight: bold; color: #333; }
+    .history-date { font-size: 12px; color: #999; font-weight: normal; margin-bottom: 4px; }
+    .history-badge { display: inline-block; background: #FFF0F2; color: #FF8E9E; font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; }
+
+    /* 피드백 UI */
+    .feedback-input { width: 100%; height: 100px; padding: 15px; border: 1.5px solid #EEEEEE; border-radius: 16px; font-family: inherit; resize: none; margin-bottom: 15px; }
+    .feedback-input:focus { outline: none; border-color: #FF8E9E; }
+    .submit-btn { width: 100%; background: #333; color: white; border: none; padding: 15px; border-radius: 16px; font-size: 15px; font-weight: bold; cursor: pointer; }
+
+    /* 완료된 프로젝트 리스트 UI (클릭 가능하도록 마우스 포인터 추가) */
+    .past-project-card { background: #FFFFFF; border: 1.5px solid #F0F0F0; border-radius: 16px; padding: 25px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
+    .past-project-card:hover { border-color: #FF8E9E; transform: translateY(-2px); }
+    .past-date { font-size: 12px; color: #999; margin-bottom: 6px; }
+    .past-title { font-size: 18px; font-weight: bold; color: #444; }
+    .past-badge { background: #FFF0F2; color: #FF8E9E; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+
+    /* 공통 모달 (이미지 확대 및 지난 기록 열람용) */
+    .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+    .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; font-weight: bold; cursor: pointer; z-index: 10000; }
+    
+    /* 이미지 전용 모달 */
+    #imageModal img { max-width: 90%; max-height: 90%; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    /* 지난 기록 상세 열람용 모달 박스 */
+    .past-detail-box { background: white; width: 90%; max-width: 700px; max-height: 85vh; border-radius: 20px; padding: 30px; overflow-y: auto; position: relative; }
+  </style>
+</head>
+<body>
+
+  <!-- 사진 확대 모달 -->
+  <div id="imageModal" class="modal" onclick="closeImageModal()">
+    <div class="close-modal">✕</div>
+    <img id="modalImg" src="">
+  </div>
+
+  <!-- 지난 기록 상세 열람 모달 -->
+  <div id="pastDetailModal" class="modal" onclick="closePastModal(event)">
+    <div class="past-detail-box" onclick="event.stopPropagation()">
+      <div class="close-modal" style="color:#333; top: 15px; right: 20px;" onclick="closePastModal()">✕</div>
+      <h2 id="pastModalTitle" style="font-size: 20px; color: #FF8E9E; margin-bottom: 5px;">작업 상세 기록</h2>
+      <p id="pastModalDate" style="font-size: 13px; color: #999; margin-bottom: 20px;"></p>
+      
+      <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;">📸 작업 히스토리</div>
+      <div class="history-container" id="pastModalHistoryContainer" style="margin-bottom: 0;">
+        <!-- 과거 히스토리 카드들이 여기에 뜸 -->
+      </div>
+    </div>
+  </div>
+
+  <header><div class="logo">✨ MISEO STUDIO</div></header>
+
+  <div id="loadingScreen">데이터를 불러오는 중입니다...⏳</div>
+  <div id="errorScreen" style="display: none;">❌ 잘못된 접근입니다.</div>
+
+  <main id="mainContent">
+    
+    <div id="activeProjectArea">
+      <div class="card">
+        <div class="header-info">
+          <div>
+            <div class="client-name" id="displayClientName"></div>
+            <div class="project-name" id="displayProjectName"></div>
+          </div>
+          <div style="background: #333; color: white; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold;">진행중</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">🚀 작업 프로세스</div>
+        <div class="timeline-container" id="timelineContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📸 작업 기록 (History)</div>
+        <div class="history-container" id="historyContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">💬 의견 및 피드백</div>
+        <div style="font-size: 13px; color: #999; text-align: right; margin-bottom: 10px; font-weight: bold;" id="feedbackCountDisplay">
+          현재 단계 수정 요청: 0회
+        </div>
+        <textarea class="feedback-input" id="feedbackMemo" placeholder="위 작업 기록을 확인하시고 수정 사항이나 코멘트를 남겨주세요..."></textarea>
+        <button class="submit-btn" onclick="sendFeedback()">현재 단계에 피드백 전송하기</button>
+      </div>
+    </div>
+
+    <!-- 완료된 작업 보관함 영역 -->
+    <div id="pastProjectsArea" style="display: none; margin-top: 20px;">
+      <h2 style="font-size: 18px; color: #333; margin-bottom: 15px; padding-left: 5px;">📦 완료된 작업</h2>
+      <div id="pastProjectsList"></div>
+    </div>
+
+  </main>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB3Ss44u7BbJBvlXE-P4sCNiwIXFoWyZvU",
+      authDomain: "miseo-studio-eb594.firebaseapp.com",
+      projectId: "miseo-studio-eb594",
+      storageBucket: "miseo-studio-eb594.firebasestorage.app",
+      messagingSenderId: "1062169263137",
+      appId: "1:1062169263137:web:8b8e25013335cd3234b760"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let currentDocId = "";
+    let windowProjectData = null; 
+    let allPastProjectsCache = []; // 완료된 프로젝트 데이터를 모달에서 쓰기 위해 저장해둘 창고
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientId = urlParams.get('id');
+
+    window.onload = function() {
+      if(!clientId) return document.getElementById('errorScreen').style.display = 'block';
+
+      db.collection("projects").where("clientCode", "==", clientId).get().then((snap) => {
+        if(snap.empty) return document.getElementById('errorScreen').style.display = 'block';
+
+        let allDocs = [];
+        snap.forEach(doc => allDocs.push({ id: doc.id, data: doc.data() }));
+        allDocs.sort((a,b) => (b.data.createdAt?.toMillis() || 0) - (a.data.createdAt?.toMillis() || 0));
+
+        let activeProject = null;
+        let pastProjects = [];
+
+        allDocs.forEach(item => {
+          let data = item.data;
+          let processes = data.processes || [];
+          let currentStep = data.currentStepIndex || 0;
+          let isCompleted = (currentStep >= processes.length - 1) || (data.status === "완료");
+
+          if (isCompleted) {
+            pastProjects.push(data);
+          } else {
+            if (!activeProject) {
+              activeProject = data;
+              currentDocId = item.id;
+            }
+          }
+        });
+
+        allPastProjectsCache = pastProjects; // 캐시에 저장
+
+        document.getElementById('loadingScreen').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+
+        if (activeProject) {
+          windowProjectData = activeProject;
+          renderActiveDashboard(activeProject);
+        } else {
+          document.getElementById('activeProjectArea').innerHTML = `
+            <div class="card" style="text-align: center; padding: 50px 20px; color: #777;">
+              <div style="font-size: 35px; margin-bottom: 10px;">☕</div>
+              <p style="font-weight: bold; font-size: 16px;">현재 진행 중인 새로운 작업이 없습니다.</p>
+            </div>
+          `;
+        }
+
+        if (pastProjects.length > 0) {
+          renderPastProjects(pastProjects);
+        }
+      });
+    };
+
+    function renderActiveDashboard(data) {
+      document.getElementById('displayClientName').innerText = data.clientName + " 님";
+      document.getElementById('displayProjectName').innerText = data.projectName;
+      
+      let stepCounts = data.stepFeedbackCounts || Array(data.processes.length).fill(0);
+      let currentStep = data.currentStepIndex || 0;
+      
+      document.getElementById('feedbackCountDisplay').innerText = `현재 [${data.processes[currentStep]}] 단계 수정 요청: ${stepCounts[currentStep]}회`;
+
+      let tHtml = "";
+      data.processes.forEach((proc, idx) => {
+        let cls = idx < currentStep ? "completed" : (idx === currentStep ? "active" : ""); 
+        tHtml += `<div class="station-wrapper"><div class="station ${cls}"><div class="node"></div><div class="name">${proc}</div></div></div>`;
+        if(idx < data.processes.length - 1) tHtml += `<div class="track ${idx < currentStep ? "completed" : ""}"></div>`;
+      });
+      document.getElementById('timelineContainer').innerHTML = tHtml;
+
+      renderHistoryCards(data.history, data.stepFeedbackCounts, 'historyContainer');
+    }
+
+    // 히스토리 카드 공통 생성 함수 (메인화면 & 모달창 공용)
+    function renderHistoryCards(historyArray, stepCounts, containerId) {
+      let hBox = document.getElementById(containerId);
+      let hData = historyArray || [];
+      stepCounts = stepCounts || [];
+      
+      if(hData.length > 0) {
+        let hHtml = "";
+        hData.forEach(item => {
+          let dateStr = "";
+          if (item.date && item.date.toDate) {
+            let d = item.date.toDate();
+            dateStr = `${d.getFullYear()}.${('0'+(d.getMonth()+1)).slice(-2)}.${('0'+d.getDate()).slice(-2)} ${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}`;
+          }
+
+          let imgTag = item.fileUrl 
+            ? `<img src="${item.fileUrl}" alt="사진" onclick="openImageModal('${item.fileUrl}')">` 
+            : `<div style="color:#aaa; font-size:13px;">사진 없음</div>`;
+          
+          let specificFeedbackCount = stepCounts[item.stepIndex] || 0;
+
+          hHtml += `
+            <div class="history-card">
+              <div class="history-photo">${imgTag}</div>
+              <div class="history-desc">
+                <div class="history-date">${dateStr}</div>
+                <div class="history-badge">📌 ${item.stepName} (수정 ${specificFeedbackCount}회)</div>
+                <div>${item.memo}</div>
+              </div>
+            </div>
+          `;
+        });
+        hBox.innerHTML = hHtml;
+      } else {
+        hBox.innerHTML = `<p style="color:#999; padding:20px; width:100%; text-align:center;">기록된 작업 내역이 없습니다.</p>`;
+      }
+    }
+
+    function renderPastProjects(projects) {
+      let area = document.getElementById('pastProjectsArea');
+      let list = document.getElementById('pastProjectsList');
+      area.style.display = 'block';
+      
+      let html = "";
+      projects.forEach((p, index) => {
+        let dateStr = "";
+        if (p.createdAt && p.createdAt.toDate) {
+          let d = p.createdAt.toDate();
+          dateStr = `${d.getFullYear()}.${('0'+(d.getMonth()+1)).slice(-2)}.${('0'+d.getDate()).slice(-2)} 시작됨`;
+        }
+        // 클릭하면 몇 번째 보관함인지(index)를 넘겨서 상세 모달을 띄움
+        html += `
+          <div class="past-project-card" onclick="openPastModal(${index})">
+            <div>
+              <div class="past-date">${dateStr}</div>
+              <div class="past-title">${p.projectName}</div>
+            </div>
+            <div class="past-badge">지난 기록 보기</div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    // 완료된 작업 클릭 시 상세 모달 열기
+    function openPastModal(index) {
+      let pData = allPastProjectsCache[index];
+      if(!pData) return;
+
+      document.getElementById('pastModalTitle').innerText = pData.projectName;
+      
+      let dateStr = "";
+      if (pData.createdAt && pData.createdAt.toDate) {
+        let d = pData.createdAt.toDate();
+        dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 생성된 프로젝트`;
+      }
+      document.getElementById('pastModalDate').innerText = dateStr;
+
+      // 해당 프로젝트의 히스토리 카드들을 모달 안의 전용 공간에 렌더링
+      renderHistoryCards(pData.history, pData.stepFeedbackCounts, 'pastModalHistoryContainer');
+
+      let modal = document.getElementById('pastDetailModal');
+      modal.style.display = 'flex';
+      setTimeout(() => modal.style.opacity = '1', 10);
+    }
+
+    function closePastModal() {
+      let modal = document.getElementById('pastDetailModal');
+      modal.style.opacity = '0';
+      setTimeout(() => modal.style.display = 'none', 300);
+    }
+
+    function sendFeedback() {
+      let memo = document.getElementById('feedbackMemo').value.trim();
+      if(!memo) return alert("코멘트를 입력해 주세요.");
+
+      let data = windowProjectData;
+      let currentCounts = data.stepFeedbackCounts || Array(data.processes ? data.processes.length : 10).fill(0);
+      let stepIdx = data.currentStepIndex || 0;
+      
+      currentCounts[stepIdx] = (currentCounts[stepIdx] || 0) + 1;
+
+      db.collection("projects").doc(currentDocId).update({
+        stepFeedbackCounts: currentCounts,
+        latestFeedback: memo,
+        lastFeedbackDate: new Date()
+      }).then(() => {
+        alert("피드백이 전송되었습니다!");
+        window.location.reload(); 
+      }).catch(err => alert("오류 발생: " + err));
+    }
+
+    // 사진 확대 모달 함수
+    function openImageModal(src) {
+      let modal = document.getElementById('imageModal');
+      document.getElementById('modalImg').src = src;
+      modal.style.display = 'flex';
+      setTimeout(() => modal.style.opacity = '1', 10);
+    }
+    function closeImageModal() {
+      let modal = document.getElementById('imageModal');
+      modal.style.opacity = '0';
+      setTimeout(() => modal.style.display = 'none', 300);
+    }
+  </script>
+</body>
+</html>
