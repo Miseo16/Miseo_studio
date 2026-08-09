@@ -12,11 +12,9 @@
     body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
     .admin-container { max-width: 650px; margin: 0 auto; }
     .card { background: white; padding: 35px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); margin-bottom: 30px; }
-    
     h2 { margin-top: 0; color: #FF8E9E; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
     .input-group { margin-bottom: 25px; }
     label { font-weight: bold; font-size: 14px; color: #555; display: block; margin-bottom: 8px; }
-    .sub-label { font-size: 12px; color: #999; font-weight: normal; margin-bottom: 8px; display: block; }
     input[type="text"], input[type="number"] { width: 100%; padding: 12px; box-sizing: border-box; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px; }
     input[type="file"] { width: 100%; padding: 10px; background: #f9f9f9; cursor: pointer; border: 1.5px solid #ddd; border-radius: 8px; }
     input:focus { outline: none; border-color: #FF8E9E; }
@@ -25,26 +23,18 @@
     .btn:hover { background: #FF8E9E; }
     .log-box { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; text-align: center; word-break: break-all; }
     
-    /* 새로 추가된 프로세스 선택기 스타일 */
     #processRadioGroup { display: none; background: #FFF0F2; padding: 20px; border-radius: 12px; border: 1.5px solid #FFB6C1; margin-bottom: 25px; }
     .radio-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-    .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; font-weight: bold; color: #444; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid #eee; transition: 0.2s; }
-    .radio-item:hover { border-color: #FF8E9E; }
+    .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; font-weight: bold; color: #444; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid #eee; }
     .radio-item input { width: 18px; height: 18px; accent-color: #FF8E9E; cursor: pointer; }
-    
-    /* 기록 삭제 리스트 UI */
-    .history-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
-    .del-btn { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    .del-btn:hover { background: #cc0000; }
   </style>
 </head>
 <body>
 
   <div class="admin-container">
     
-    <!-- 1. 새 프로젝트 생성 -->
     <div class="card">
-      <h2>📝 1. 새로운 의뢰 등록하기</h2>
+      <h2>📝 새로운 의뢰 등록하기</h2>
       <div class="input-group">
         <label>의뢰인 고유 식별코드</label>
         <input type="text" id="clientCode" placeholder="예: USER01">
@@ -65,9 +55,8 @@
       <div class="log-box" id="logBox1">대기 중...</div>
     </div>
 
-    <!-- 2. 진행 상황 업데이트 (체크박스 형태로 변경됨) -->
     <div class="card">
-      <h2>🚀 2. 진행 상황 및 과거 기록 업데이트</h2>
+      <h2>🚀 진행 상황 및 데이터 업데이트</h2>
       
       <div class="input-group">
         <label>업데이트할 의뢰인 식별코드</label>
@@ -77,40 +66,28 @@
         </div>
       </div>
 
-      <!-- 동적으로 나타나는 프로세스 선택 영역 -->
       <div id="processRadioGroup">
         <label style="color: #FF8E9E; font-size: 16px;">📌 현재 진행 단계를 선택해 주세요</label>
-        <div class="radio-list" id="dynamicProcessList">
-          <!-- 스크립트가 의뢰인 정보를 불러와 이곳에 버튼들을 생성합니다 -->
-        </div>
+        <div class="radio-list" id="dynamicProcessList"></div>
       </div>
 
       <div class="input-group">
-        <label>작업물 사진 첨부 (선택)</label>
-        <input type="file" id="uploadFile">
-      </div>
-      <div class="input-group">
-        <label>작업 내역 코멘트 (필수)</label>
-        <input type="text" id="updateMemo" placeholder="예: 얼굴 모델링 스케치 완료했습니다.">
+        <label>📸 미리보기 사진 첨부 (선택)</label>
+        <input type="file" id="uploadPhoto" accept="image/*">
       </div>
       
-      <button class="btn" style="background: #FF8E9E;" onclick="updateProject()">업데이트 및 기록 남기기</button>
-      <div class="log-box" id="logBox2">대기 중...</div>
-    </div>
-
-    <!-- 3. 과거 기록 관리 (삭제) -->
-    <div class="card">
-      <h2>🗑️ 3. 과거 기록 관리 (삭제)</h2>
       <div class="input-group">
-        <label>조회할 의뢰인 식별코드</label>
-        <div style="display: flex; gap: 10px;">
-          <input type="text" id="manageCode" placeholder="예: USER01">
-          <button class="btn" style="width: 100px; margin-top: 0;" onclick="loadHistory()">조회</button>
-        </div>
+        <label>📁 전달할 작업 파일 첨부 (선택, zip 등)</label>
+        <input type="file" id="uploadFile">
       </div>
-      <div id="historyListArea" style="margin-top: 15px;">
-        <p style="color: #999; text-align: center; font-size: 14px;">코드를 입력하고 조회 버튼을 눌러주세요.</p>
+
+      <div class="input-group">
+        <label>💬 작업 내역 코멘트 (필수)</label>
+        <input type="text" id="updateMemo" placeholder="예: 얼굴 성형 완료 및 에셋 파일 전달드립니다.">
       </div>
+      
+      <button class="btn" style="background: #FF8E9E;" onclick="updateProject()">업데이트 및 전송하기</button>
+      <div class="log-box" id="logBox2">대기 중...</div>
     </div>
 
   </div>
@@ -128,7 +105,6 @@
     const db = firebase.firestore();
     const storage = firebase.storage(); 
 
-    // [기능 1] 의뢰 생성
     function createNewProject() {
       const code = document.getElementById('clientCode').value.trim();
       const name = document.getElementById('clientName').value.trim();
@@ -152,24 +128,20 @@
       .catch((error) => document.getElementById('logBox1').innerHTML = "❌ <b>에러:</b> " + error);
     }
 
-    // [기능 2-1] 의뢰인 전용 프로세스 불러오기 (숫자 입력 대신 라디오 버튼 생성)
     let loadedProcessList = [];
     let currentClientDocId = "";
 
     function loadClientProcess() {
       const code = document.getElementById('updateCode').value.trim();
-      if(!code) return alert("업데이트할 의뢰인 코드를 먼저 입력해 주세요!");
-
-      document.getElementById('logBox2').innerText = "의뢰인 정보 불러오는 중...";
+      if(!code) return alert("코드를 먼저 입력해 주세요!");
 
       db.collection("projects").where("clientCode", "==", code).get().then((querySnapshot) => {
         if (querySnapshot.empty) {
-          document.getElementById('logBox2').innerHTML = "❌ 해당 코드를 가진 진행 중인 의뢰가 없습니다.";
+          document.getElementById('logBox2').innerHTML = "❌ 진행 중인 의뢰가 없습니다.";
           document.getElementById('processRadioGroup').style.display = 'none';
           return;
         }
         
-        // 최신 프로젝트 가져오기 (과거 내역 기능 때문에 여러 개일 수 있으므로 정렬)
         let docs = [];
         querySnapshot.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
         docs.sort((a,b) => (b.data.createdAt?.toMillis() || 0) - (a.data.createdAt?.toMillis() || 0));
@@ -179,119 +151,78 @@
         loadedProcessList = docData.processes || [];
         const currentIndex = docData.currentStepIndex || 0;
 
-        // 라디오 버튼(체크박스 뷰) 동적 생성
         let html = "";
         loadedProcessList.forEach((stepName, idx) => {
           let isChecked = (idx === currentIndex) ? "checked" : "";
-          html += `
-            <label class="radio-item">
-              <input type="radio" name="stepRadio" value="${idx}" ${isChecked}>
-              ${idx + 1}. ${stepName}
-            </label>
-          `;
+          html += `<label class="radio-item"><input type="radio" name="stepRadio" value="${idx}" ${isChecked}>${idx + 1}. ${stepName}</label>`;
         });
         
         document.getElementById('dynamicProcessList').innerHTML = html;
         document.getElementById('processRadioGroup').style.display = 'block';
-        document.getElementById('logBox2').innerHTML = `✅ <b>${docData.clientName}</b> 님의 단계를 성공적으로 불러왔습니다.`;
+        document.getElementById('logBox2').innerHTML = `✅ <b>${docData.clientName}</b> 님 단계 불러오기 완료`;
       });
     }
 
-    // [기능 2-2] 업데이트 및 기록 남기기 (체크된 라디오 버튼 값 기준)
     function updateProject() {
       const code = document.getElementById('updateCode').value.trim();
-      const fileInput = document.getElementById('uploadFile').files[0];
+      const photoFile = document.getElementById('uploadPhoto').files[0];
+      const workFile = document.getElementById('uploadFile').files[0];
       const memoInput = document.getElementById('updateMemo').value.trim();
-      
       const selectedRadio = document.querySelector('input[name="stepRadio"]:checked');
       
-      if(!code || !memoInput) return alert("코드와 작업 내역 코멘트를 필수로 입력해 주세요!");
-      if(!currentClientDocId) return alert("먼저 '단계 불러오기' 버튼을 눌러주세요!");
-      if(!selectedRadio) return alert("현재 진행 단계를 선택해 주세요!");
+      if(!code || !memoInput) return alert("코드와 코멘트를 입력해 주세요!");
+      if(!currentClientDocId) return alert("먼저 '단계 불러오기'를 진행해 주세요!");
+      if(!selectedRadio) return alert("단계를 선택해 주세요!");
 
       const logBox = document.getElementById('logBox2');
-      logBox.innerText = "데이터 처리 중...";
+      logBox.innerText = "데이터 업로드 중... ⏳";
 
-      db.collection("projects").doc(currentClientDocId).get().then((doc) => {
+      let photoUrl = "";
+      let fileUrl = "";
+      let fileName = "";
+      let uploadPromises = [];
+
+      if (photoFile) {
+        let photoRef = storage.ref(`uploads/${code}/photo_${new Date().getTime()}_${photoFile.name}`);
+        uploadPromises.push(photoRef.put(photoFile).then(snap => snap.ref.getDownloadURL()).then(url => { photoUrl = url; }));
+      }
+      
+      if (workFile) {
+        let fileRef = storage.ref(`uploads/${code}/file_${new Date().getTime()}_${workFile.name}`);
+        uploadPromises.push(fileRef.put(workFile).then(snap => snap.ref.getDownloadURL()).then(url => { fileUrl = url; fileName = workFile.name; }));
+      }
+
+      Promise.all(uploadPromises).then(() => {
+        return db.collection("projects").doc(currentClientDocId).get();
+      }).then((doc) => {
         const docData = doc.data();
         let historyArray = docData.history || []; 
         let updateData = { lastUpdated: new Date() };
 
-        let stepIdx = Number(selectedRadio.value); // 선택된 라디오 버튼의 숫자값
+        let stepIdx = Number(selectedRadio.value);
         let stepName = loadedProcessList[stepIdx] || "기타";
         updateData.currentStepIndex = stepIdx;
 
-        const pushHistory = (url) => {
-          historyArray.push({
-            fileUrl: url,
-            memo: memoInput,
-            date: new Date(),
-            stepIndex: stepIdx,
-            stepName: stepName
-          });
-          updateData.history = historyArray;
-          return db.collection("projects").doc(currentClientDocId).update(updateData);
-        };
-
-        if (fileInput) {
-          logBox.innerText = "사진 업로드 중... ⏳";
-          storage.ref(`uploads/${code}/${new Date().getTime()}_${fileInput.name}`).put(fileInput)
-          .then(snapshot => snapshot.ref.getDownloadURL())
-          .then(url => pushHistory(url))
-          .then(() => logBox.innerHTML = `✅ <b>업데이트 성공!</b>`)
-          .catch(err => logBox.innerHTML = "❌ <b>오류:</b> " + err);
-        } else {
-          pushHistory("").then(() => logBox.innerHTML = "✅ <b>업데이트 성공! (사진 없음)</b>");
-        }
-      });
-    }
-
-    // [기능 3] 과거 기록 불러오기 및 삭제
-    let currentManageDocId = "";
-    function loadHistory() {
-      const code = document.getElementById('manageCode').value.trim();
-      if(!code) return alert("코드를 입력해 주세요.");
-      
-      db.collection("projects").where("clientCode", "==", code).get().then(snap => {
-        if(snap.empty) return document.getElementById('historyListArea').innerHTML = "❌ 일치하는 내역이 없습니다.";
-        
-        let docs = [];
-        snap.forEach(doc => docs.push({ id: doc.id, data: doc.data() }));
-        docs.sort((a,b) => (b.data.createdAt?.toMillis() || 0) - (a.data.createdAt?.toMillis() || 0));
-        
-        const doc = docs[0];
-        currentManageDocId = doc.id;
-        const history = doc.data.history || [];
-        
-        let html = "";
-        history.forEach((h, idx) => {
-          let dStr = h.date ? h.date.toDate().toLocaleString() : "날짜 없음";
-          html += `
-            <div class="history-item">
-              <div style="font-size:13px; color:#555;">
-                <b style="color:#FF8E9E;">[${h.stepName}]</b> ${dStr}<br>
-                <span style="font-size:15px; color:#000;">${h.memo}</span>
-              </div>
-              <button class="del-btn" onclick="deleteHistoryItem(${idx})">삭제 ✕</button>
-            </div>
-          `;
+        historyArray.push({
+          photoUrl: photoUrl,
+          fileUrl: fileUrl,
+          fileName: fileName,
+          memo: memoInput,
+          date: new Date(),
+          stepIndex: stepIdx,
+          stepName: stepName
         });
-        if(history.length === 0) html = "<p style='text-align:center;'>기록이 없습니다.</p>";
-        document.getElementById('historyListArea').innerHTML = html;
-      });
-    }
-
-    function deleteHistoryItem(index) {
-      if(!confirm("정말 이 기록을 삭제하시겠습니까?")) return;
-      
-      db.collection("projects").doc(currentManageDocId).get().then(doc => {
-        let history = doc.data().history || [];
-        history.splice(index, 1); 
-        return db.collection("projects").doc(currentManageDocId).update({ history: history });
+        
+        updateData.history = historyArray;
+        return db.collection("projects").doc(currentClientDocId).update(updateData);
       }).then(() => {
-        alert("성공적으로 삭제되었습니다.");
-        loadHistory(); 
-      }).catch(err => alert("삭제 실패: " + err));
+        logBox.innerHTML = `✅ <b>업데이트 및 전송 성공!</b>`;
+        document.getElementById('uploadPhoto').value = "";
+        document.getElementById('uploadFile').value = "";
+        document.getElementById('updateMemo').value = "";
+      }).catch(err => {
+        logBox.innerHTML = "❌ <b>오류:</b> " + err;
+      });
     }
   </script>
 </body>
