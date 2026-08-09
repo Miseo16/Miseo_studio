@@ -25,7 +25,7 @@
     .project-name { font-size: 24px; font-weight: 800; color: #333; }
     .client-name { font-size: 16px; color: #FF8E9E; font-weight: bold; }
     
-    /* 노선도 UI */
+    /* 노선도 UI (중앙 정렬) */
     .timeline-container { display: flex; align-items: center; overflow-x: auto; padding: 20px 10px; min-height: 120px; }
     .station-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; }
     .station { display: flex; justify-content: center; width: 60px; }
@@ -38,39 +38,43 @@
     .track { flex-grow: 1; height: 4px; background: #eee; min-width: 40px; transition: 0.3s; }
     .track.completed { background: #FF8E9E; }
 
-    /* 히스토리 갤러리 UI */
+    /* 작업 기록 갤러리 + 파일함 카드 */
     .history-container { display: flex; gap: 16px; overflow-x: auto; padding: 10px 0 20px 0; }
     .history-container::-webkit-scrollbar { height: 8px; }
     .history-container::-webkit-scrollbar-thumb { background: #FFB6C1; border-radius: 10px; }
-    .history-card { min-width: 240px; flex-shrink: 0; background: #fff; border: 2.5px solid #333; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-    .history-photo { height: 180px; background: #f4f4f4; display: flex; align-items: center; justify-content: center; border-bottom: 2.5px solid #333; position: relative; }
+    
+    .history-card { min-width: 260px; flex-shrink: 0; background: #fff; border: 2.5px solid #333; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .history-photo { height: 160px; background: #f4f4f4; border-bottom: 2.5px solid #333; display: flex; align-items: center; justify-content: center; position: relative; }
     .history-photo img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; transition: 0.2s; }
     .history-photo img:hover { filter: brightness(0.9); }
-    .history-desc { padding: 16px; text-align: center; font-size: 15px; font-weight: bold; color: #333; }
-    .history-date { font-size: 12px; color: #999; font-weight: normal; margin-bottom: 4px; }
-    .history-badge { display: inline-block; background: #FFF0F2; color: #FF8E9E; font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; }
+    .no-photo-text { color: #aaa; font-size: 13px; }
+    
+    .history-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+    .history-date { font-size: 12px; color: #999; margin-bottom: 4px; }
+    .history-badge { display: inline-block; background: #FFF0F2; color: #FF8E9E; font-size: 11px; padding: 4px 8px; border-radius: 4px; margin-bottom: 12px; font-weight: bold; align-self: flex-start; }
+    .history-memo { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 15px; word-break: break-all; flex-grow: 1; }
+    
+    .file-download-btn { display: block; text-align: center; background: #333; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: bold; transition: 0.2s; }
+    .file-download-btn:hover { background: #FF8E9E; }
 
     /* 피드백 UI */
     .feedback-input { width: 100%; height: 100px; padding: 15px; border: 1.5px solid #EEEEEE; border-radius: 16px; font-family: inherit; resize: none; margin-bottom: 15px; }
     .feedback-input:focus { outline: none; border-color: #FF8E9E; }
     .submit-btn { width: 100%; background: #333; color: white; border: none; padding: 15px; border-radius: 16px; font-size: 15px; font-weight: bold; cursor: pointer; }
 
-    /* 완료된 프로젝트 리스트 UI (클릭 가능하도록 마우스 포인터 추가) */
+    /* 완료된 프로젝트 보관함 카드 */
     .past-project-card { background: #FFFFFF; border: 1.5px solid #F0F0F0; border-radius: 16px; padding: 25px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s; }
     .past-project-card:hover { border-color: #FF8E9E; transform: translateY(-2px); }
     .past-date { font-size: 12px; color: #999; margin-bottom: 6px; }
     .past-title { font-size: 18px; font-weight: bold; color: #444; }
     .past-badge { background: #FFF0F2; color: #FF8E9E; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
 
-    /* 공통 모달 (이미지 확대 및 지난 기록 열람용) */
+    /* 모달 */
     .modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
     .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 30px; font-weight: bold; cursor: pointer; z-index: 10000; }
     
-    /* 이미지 전용 모달 */
     #imageModal img { max-width: 90%; max-height: 90%; border-radius: 8px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    
-    /* 지난 기록 상세 열람용 모달 박스 */
-    .past-detail-box { background: white; width: 90%; max-width: 700px; max-height: 85vh; border-radius: 20px; padding: 30px; overflow-y: auto; position: relative; }
+    .past-detail-box { background: white; width: 90%; max-width: 750px; max-height: 85vh; border-radius: 20px; padding: 30px; overflow-y: auto; position: relative; }
   </style>
 </head>
 <body>
@@ -81,17 +85,15 @@
     <img id="modalImg" src="">
   </div>
 
-  <!-- 지난 기록 상세 열람 모달 -->
-  <div id="pastDetailModal" class="modal" onclick="closePastModal(event)">
+  <!-- 완료된 작업 상세 열람 모달 -->
+  <div id="pastDetailModal" class="modal" onclick="closePastModal()">
     <div class="past-detail-box" onclick="event.stopPropagation()">
       <div class="close-modal" style="color:#333; top: 15px; right: 20px;" onclick="closePastModal()">✕</div>
-      <h2 id="pastModalTitle" style="font-size: 20px; color: #FF8E9E; margin-bottom: 5px;">작업 상세 기록</h2>
+      <h2 id="pastModalTitle" style="font-size: 20px; color: #FF8E9E; margin-bottom: 5px;">작업 상세 기록 및 파일함</h2>
       <p id="pastModalDate" style="font-size: 13px; color: #999; margin-bottom: 20px;"></p>
       
-      <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;">📸 작업 히스토리</div>
-      <div class="history-container" id="pastModalHistoryContainer" style="margin-bottom: 0;">
-        <!-- 과거 히스토리 카드들이 여기에 뜸 -->
-      </div>
+      <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;">📸 갤러리 및 첨부파일</div>
+      <div class="history-container" id="pastModalHistoryContainer" style="margin-bottom: 0;"></div>
     </div>
   </div>
 
@@ -119,7 +121,7 @@
       </div>
 
       <div class="card">
-        <div class="section-title">📸 작업 기록 (History)</div>
+        <div class="section-title">📸 작업 갤러리 및 파일 다운로드</div>
         <div class="history-container" id="historyContainer"></div>
       </div>
 
@@ -128,14 +130,13 @@
         <div style="font-size: 13px; color: #999; text-align: right; margin-bottom: 10px; font-weight: bold;" id="feedbackCountDisplay">
           현재 단계 수정 요청: 0회
         </div>
-        <textarea class="feedback-input" id="feedbackMemo" placeholder="위 작업 기록을 확인하시고 수정 사항이나 코멘트를 남겨주세요..."></textarea>
+        <textarea class="feedback-input" id="feedbackMemo" placeholder="작업 기록을 확인하시고 피드백을 남겨주세요..."></textarea>
         <button class="submit-btn" onclick="sendFeedback()">현재 단계에 피드백 전송하기</button>
       </div>
     </div>
 
-    <!-- 완료된 작업 보관함 영역 -->
     <div id="pastProjectsArea" style="display: none; margin-top: 20px;">
-      <h2 style="font-size: 18px; color: #333; margin-bottom: 15px; padding-left: 5px;">📦 완료된 작업</h2>
+      <h2 style="font-size: 18px; color: #333; margin-bottom: 15px; padding-left: 5px;">📦 완료된 작업 보관함</h2>
       <div id="pastProjectsList"></div>
     </div>
 
@@ -155,7 +156,7 @@
 
     let currentDocId = "";
     let windowProjectData = null; 
-    let allPastProjectsCache = []; // 완료된 프로젝트 데이터를 모달에서 쓰기 위해 저장해둘 창고
+    let allPastProjectsCache = []; 
     
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('id');
@@ -189,7 +190,7 @@
           }
         });
 
-        allPastProjectsCache = pastProjects; // 캐시에 저장
+        allPastProjectsCache = pastProjects; 
 
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
@@ -232,7 +233,7 @@
       renderHistoryCards(data.history, data.stepFeedbackCounts, 'historyContainer');
     }
 
-    // 히스토리 카드 공통 생성 함수 (메인화면 & 모달창 공용)
+    // 사진 갤러리와 다운로드 버튼이 결합된 렌더링 함수
     function renderHistoryCards(historyArray, stepCounts, containerId) {
       let hBox = document.getElementById(containerId);
       let hData = historyArray || [];
@@ -247,19 +248,28 @@
             dateStr = `${d.getFullYear()}.${('0'+(d.getMonth()+1)).slice(-2)}.${('0'+d.getDate()).slice(-2)} ${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}`;
           }
 
-          let imgTag = item.fileUrl 
-            ? `<img src="${item.fileUrl}" alt="사진" onclick="openImageModal('${item.fileUrl}')">` 
-            : `<div style="color:#aaa; font-size:13px;">사진 없음</div>`;
+          // 구버전(fileUrl만 있던 시절) 데이터와 신버전(photoUrl, fileUrl)을 모두 호환하는 로직
+          let imgUrl = item.photoUrl || (item.fileUrl && item.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i) ? item.fileUrl : "");
+          let dlUrl = item.fileUrl && item.fileUrl !== imgUrl ? item.fileUrl : item.fileUrl; // 사진과 파일이 같지 않을때만 분리
+
+          let imgTag = imgUrl 
+            ? `<img src="${imgUrl}" alt="작업사진" onclick="openImageModal('${imgUrl}')">` 
+            : `<div class="no-photo-text">사진 없음</div>`;
+          
+          let fileAction = dlUrl 
+            ? `<a href="${dlUrl}" target="_blank" class="file-download-btn">📥 ${item.fileName || '첨부 파일 다운로드'}</a>` 
+            : "";
           
           let specificFeedbackCount = stepCounts[item.stepIndex] || 0;
 
           hHtml += `
             <div class="history-card">
               <div class="history-photo">${imgTag}</div>
-              <div class="history-desc">
+              <div class="history-body">
                 <div class="history-date">${dateStr}</div>
                 <div class="history-badge">📌 ${item.stepName} (수정 ${specificFeedbackCount}회)</div>
-                <div>${item.memo}</div>
+                <div class="history-memo">${item.memo}</div>
+                ${fileAction}
               </div>
             </div>
           `;
@@ -282,21 +292,19 @@
           let d = p.createdAt.toDate();
           dateStr = `${d.getFullYear()}.${('0'+(d.getMonth()+1)).slice(-2)}.${('0'+d.getDate()).slice(-2)} 시작됨`;
         }
-        // 클릭하면 몇 번째 보관함인지(index)를 넘겨서 상세 모달을 띄움
         html += `
           <div class="past-project-card" onclick="openPastModal(${index})">
             <div>
               <div class="past-date">${dateStr}</div>
               <div class="past-title">${p.projectName}</div>
             </div>
-            <div class="past-badge">지난 기록 보기</div>
+            <div class="past-badge">사진 및 파일함 열기 🔍</div>
           </div>
         `;
       });
       list.innerHTML = html;
     }
 
-    // 완료된 작업 클릭 시 상세 모달 열기
     function openPastModal(index) {
       let pData = allPastProjectsCache[index];
       if(!pData) return;
@@ -310,7 +318,6 @@
       }
       document.getElementById('pastModalDate').innerText = dateStr;
 
-      // 해당 프로젝트의 히스토리 카드들을 모달 안의 전용 공간에 렌더링
       renderHistoryCards(pData.history, pData.stepFeedbackCounts, 'pastModalHistoryContainer');
 
       let modal = document.getElementById('pastDetailModal');
@@ -326,7 +333,7 @@
 
     function sendFeedback() {
       let memo = document.getElementById('feedbackMemo').value.trim();
-      if(!memo) return alert("코멘트를 입력해 주세요.");
+      if(!memo) return alert("피드백 코멘트를 입력해 주세요.");
 
       let data = windowProjectData;
       let currentCounts = data.stepFeedbackCounts || Array(data.processes ? data.processes.length : 10).fill(0);
@@ -344,7 +351,7 @@
       }).catch(err => alert("오류 발생: " + err));
     }
 
-    // 사진 확대 모달 함수
+    // 사진 확대 모달 
     function openImageModal(src) {
       let modal = document.getElementById('imageModal');
       document.getElementById('modalImg').src = src;
