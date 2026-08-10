@@ -28,10 +28,15 @@
     .radio-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; font-weight: bold; color: #444; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid #eee; }
     .radio-item input { width: 18px; height: 18px; accent-color: #FF8E9E; cursor: pointer; }
     
-    /* 삭제 리스트용 스타일 (복원됨) */
     .history-item { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
     .del-btn { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .del-btn:hover { background: #cc0000; }
+
+    /* 클라이언트 피드백 알림창 스타일 추가 */
+    #feedbackDisplayBox { display: none; background: #FFFBE6; color: #856404; padding: 20px; border-radius: 12px; border: 1.5px solid #FFE58F; margin-bottom: 25px; line-height: 1.5; }
+    .feedback-title { font-weight: bold; font-size: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .feedback-date { font-size: 12px; color: #B8860B; font-weight: normal; }
+    .feedback-content { font-size: 16px; color: #333; font-weight: bold; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -73,6 +78,15 @@
         </div>
       </div>
 
+      <!-- 💡 클라이언트가 남긴 피드백이 표시되는 영역 💡 -->
+      <div id="feedbackDisplayBox">
+        <div class="feedback-title">
+          <span>🚨 새로운 피드백 도착!</span>
+          <span class="feedback-date" id="fbDate"></span>
+        </div>
+        <div class="feedback-content" id="fbContent"></div>
+      </div>
+
       <div id="processRadioGroup">
         <label style="color: #FF8E9E; font-size: 16px;">📌 현재 진행 단계를 선택해 주세요</label>
         <div class="radio-list" id="dynamicProcessList"></div>
@@ -97,7 +111,7 @@
       <div class="log-box" id="logBox2">대기 중...</div>
     </div>
 
-    <!-- 3. 과거 기록 관리 (삭제) - 복원 완료! -->
+    <!-- 3. 과거 기록 관리 (삭제) -->
     <div class="card">
       <h2>🗑️ 과거 기록 관리 (삭제)</h2>
       <div class="input-group">
@@ -151,7 +165,7 @@
       .catch((error) => document.getElementById('logBox1').innerHTML = "❌ <b>에러:</b> " + error);
     }
 
-    // [기능 2] 단계 불러오기
+    // [기능 2] 단계 불러오기 및 피드백 표시 (수정됨)
     let loadedProcessList = [];
     let currentClientDocId = "";
 
@@ -163,6 +177,7 @@
         if (querySnapshot.empty) {
           document.getElementById('logBox2').innerHTML = "❌ 진행 중인 의뢰가 없습니다.";
           document.getElementById('processRadioGroup').style.display = 'none';
+          document.getElementById('feedbackDisplayBox').style.display = 'none';
           return;
         }
         
@@ -174,6 +189,16 @@
         currentClientDocId = docs[0].id;
         loadedProcessList = docData.processes || [];
         const currentIndex = docData.currentStepIndex || 0;
+
+        // 클라이언트 피드백이 있으면 화면에 띄워주기
+        if (docData.latestFeedback) {
+          let fbDateStr = docData.lastFeedbackDate ? docData.lastFeedbackDate.toDate().toLocaleString() : "시간 정보 없음";
+          document.getElementById('fbDate').innerText = fbDateStr;
+          document.getElementById('fbContent').innerText = `"${docData.latestFeedback}"`;
+          document.getElementById('feedbackDisplayBox').style.display = 'block';
+        } else {
+          document.getElementById('feedbackDisplayBox').style.display = 'none';
+        }
 
         let html = "";
         loadedProcessList.forEach((stepName, idx) => {
@@ -187,7 +212,7 @@
       });
     }
 
-    // [기능 2] 업데이트 및 전송 (사진/파일 분리 반영)
+    // [기능 2] 업데이트 및 전송
     function updateProject() {
       const code = document.getElementById('updateCode').value.trim();
       const photoFile = document.getElementById('uploadPhoto').files[0];
@@ -239,18 +264,24 @@
         });
         
         updateData.history = historyArray;
+        // 피드백을 확인하고 답변(업데이트)을 달았으므로, 알림창을 리셋해주고 싶다면 아래 두 줄의 주석을 푸시면 됩니다.
+        // updateData.latestFeedback = "";
+        // updateData.lastFeedbackDate = null;
+        
         return db.collection("projects").doc(currentClientDocId).update(updateData);
       }).then(() => {
         logBox.innerHTML = `✅ <b>업데이트 및 전송 성공!</b>`;
         document.getElementById('uploadPhoto').value = "";
         document.getElementById('uploadFile').value = "";
         document.getElementById('updateMemo').value = "";
+        // 성공 시 피드백 알림창 가리기
+        document.getElementById('feedbackDisplayBox').style.display = 'none';
       }).catch(err => {
         logBox.innerHTML = "❌ <b>오류:</b> " + err;
       });
     }
 
-    // [기능 3] 과거 기록 조회 및 삭제 (복원됨)
+    // [기능 3] 과거 기록 조회 및 삭제
     let currentManageDocId = "";
     
     function loadHistory() {
